@@ -12,6 +12,6 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.use('/api', require('./routes/tienda.routes'));
-app.use('/api', require('./routes/auth.routes'));
+app.use('/api/users', require ('./routes/users.routes'));
 
 module.exports = app;
