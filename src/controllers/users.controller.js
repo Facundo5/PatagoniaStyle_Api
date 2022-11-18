@@ -6,7 +6,7 @@ const getUsers = async(req, res)=>{
     try {
         const connection = await getConnection();
 
-        const usuarios = await connection.query("SELECT id_user, username, email FROM users");
+        const usuarios = await connection.query("SELECT * FROM users");
 
         res.status(200).json({
             ok:true,
@@ -24,10 +24,10 @@ const getUsers = async(req, res)=>{
 const addUsers = async(req, res)=>{
 
     try {
-        const {username, email, password} = req.body
+        const {name, email, password} = req.body
 
         const usuario ={
-            username,
+            name,
             email,
             password
         }
@@ -57,15 +57,11 @@ const editUsers = async(req, res)=>{
     
     const id = req.params.id
     console.log(id);
-
     try {
         
         const userUpdated = req.body
-
         const connection = await getConnection();
-
         const idUser = await connection.query("SELECT id_user FROM users WHERE id_user = ?", id);
-
         if(idUser.length<1){
             return res.status(404).json({
                 ok:false,
@@ -120,10 +116,31 @@ const delUser = async(req,res)=>{
         })
     }
 }
+const getUser = async (req, res) => {
+    const id = req.params.id
+    try {
+        const connection = await getConnection();
+        const result = await connection.query('SELECT * FROM users WHERE id_user = ?',[id])
+        if(!result){
+            res.status(404).json({
+                ok:false,
+                msg:'Error al traer el usuario'
+            })
+        }else {
+            res.json(result)
+        }
+    }catch{
+        res.status(500).json({
+            ok:false,
+            msg:'Ocurrio un error en el servidor'
+        })
+    }
+}
 
 module.exports={
     getUsers,
     addUsers,
     editUsers,
-    delUser
+    delUser,
+    getUser
 }
