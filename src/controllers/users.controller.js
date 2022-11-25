@@ -1,32 +1,35 @@
-const {getConnection} = require('../database/database');
-const {request, response} = require('express');
+const { getConnection } = require('../database/database');
+const { request, response } = require('express');
 const bcrypt = require('bcryptjs');
 
-const getUsers = async(req, res)=>{
+const getUsers = async (req, res) => {
     try {
         const connection = await getConnection();
 
-        const usuarios = await connection.query("SELECT * FROM users");
+        const users = await connection.query("SELECT * FROM users");
+        console.log(users, 'aaaaa')
 
-        res.status(200).json({
-            ok:true,
-            usuarios
-        })
-
+        if (!users) {
+            res.status(404).json({
+                ok: false,
+                msg: 'Error al hacer la consulta en el servidor'
+            })
+        }
+        res.json(users)
     } catch (error) {
         res.status(500).json({
-            ok:false,
+            ok: false,
             msg: error.message
         })
     }
 }
 
-const addUsers = async(req, res)=>{
+const addUsers = async (req, res) => {
 
     try {
-        const {name, email, password} = req.body
+        const { name, email, password } = req.body
 
-        const usuario ={
+        const usuario = {
             name,
             email,
             password
@@ -41,62 +44,62 @@ const addUsers = async(req, res)=>{
         const result = await connection.query(sql, usuario);
 
         res.status(200).json({
-            ok:true,
+            ok: true,
             msg: 'Usuario Creado con exito!'
         });
 
     } catch (error) {
         res.status(500).json({
-            ok:false,
-            message:error
+            ok: false,
+            message: error
         })
     }
 }
 
-const editUsers = async(req, res)=>{
-    
+const editUsers = async (req, res) => {
+
     const id = req.params.id
     console.log(id);
     try {
-        
+
         const userUpdated = req.body
         const connection = await getConnection();
         const idUser = await connection.query("SELECT id_user FROM users WHERE id_user = ?", id);
-        if(idUser.length<1){
+        if (idUser.length < 1) {
             return res.status(404).json({
-                ok:false,
+                ok: false,
                 message: 'El Usuario no existe'
             });
         }
 
-        const result = await connection.query("UPDATE users set ? WHERE id_user=?",[userUpdated, id]);
+        const result = await connection.query("UPDATE users set ? WHERE id_user=?", [userUpdated, id]);
 
         res.status(200).json({
-            ok:true,
+            ok: true,
             result,
             msg: 'Usuario Actualizado'
         });
 
     } catch (error) {
         res.status(500).json({
-            ok:false,
+            ok: false,
             msg: error.message
         })
     }
 }
 
-const delUser = async(req,res)=>{
+const delUser = async (req, res) => {
     const id = req.params.id
     console.log(id)
     try {
-        
+
         const connection = await getConnection();
 
         const idUser = await connection.query("SELECT id_user FROM users WHERE id_user = ?", id);
 
-        if(idUser.length<1){
+        if (idUser.length < 1) {
             return res.status(404).json({
-                ok:false,
+                ok: false,
                 message: 'El Usuario no existe'
             });
         }
@@ -104,14 +107,14 @@ const delUser = async(req,res)=>{
         const result = await connection.query("DELETE from users set ? WHERE id_user=?", id);
 
         res.status(200).josn({
-            ok:true,
+            ok: true,
             result,
             msg: 'Usuario Eliminado'
 
         })
     } catch (error) {
         res.status(500).json({
-            ok:false,
+            ok: false,
             msg: error.message
         })
     }
@@ -120,24 +123,24 @@ const getUser = async (req, res) => {
     const id = req.params.id
     try {
         const connection = await getConnection();
-        const result = await connection.query('SELECT * FROM users WHERE id_user = ?',[id])
-        if(!result){
+        const result = await connection.query('SELECT * FROM users WHERE id_user = ?', [id])
+        if (!result) {
             res.status(404).json({
-                ok:false,
-                msg:'Error al traer el usuario'
+                ok: false,
+                msg: 'Error al traer el usuario'
             })
-        }else {
+        } else {
             res.json(result)
         }
-    }catch{
+    } catch {
         res.status(500).json({
-            ok:false,
-            msg:'Ocurrio un error en el servidor'
+            ok: false,
+            msg: 'Ocurrio un error en el servidor'
         })
     }
 }
 
-module.exports={
+module.exports = {
     getUsers,
     addUsers,
     editUsers,

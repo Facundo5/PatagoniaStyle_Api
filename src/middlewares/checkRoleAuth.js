@@ -27,7 +27,8 @@ const checkRoleAuth = (roles) => async (req = request,res = response, next) => {
     }catch (e){
         //Si ocurre algun error al intentar hacer alguna consulta a la base de datos, mostramos un error de servidor
         res.status(500).json({
-            msg: e
+            msg: e,
+            msg: 'error en authRole'
         })
     }
 }

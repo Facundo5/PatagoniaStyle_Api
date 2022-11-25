@@ -1,42 +1,67 @@
 const { getConnection } = require("../database/database")
-const multer = require('multer')
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, '../../../PatagoniaStyleI-Commerce-master/src/uploads/shoes')
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.fieldname + '-' + uniqueSuffix)
-    }
-})
-
+const cloudinary = require('../utils/cloudinary')
 const addProduct = async (req = request, res = response) => {
-    image = ''
-    const { title, price, model, id_brand, gender, id_size, discount, description } = req.body
 
-    const dataProduct = {
-        id_brand, id_size, title, description, model, image, price, gender, discount
-    }
+    const { title, price, model, id_brand, gender, id_size, discount, description, statuse } = req.body
     try {
-        const connection = await getConnection()
-        const sql = ('INSERT INTO shoes SET ?')
-        const result = await connection.query(sql, dataProduct);
-        if (!result) {
-            res.status(404).json({
-                ok: false,
-                msg: 'Ocurrio un error al crear el producto'
-            })
+        const uploader = async (path) => await cloudinary.uploads(path, 'Images');
+        console.log('paso el upload')
+        if (req.method === 'POST') {
+            console.log("emtro en el req de metodo")
+            var urls = []
+            const files = req.files;
+            console.log(files)
+            console.log("antes del for")
+            for (const file of files) {
+                console.log("dentro del for")
+                const { path } = file;
+                console.log('antes del uploader')
+                const newPath = await uploader(path);
+                urls.push(newPath)
+            }
+            var dataurl = []
+            dataurl = urls[0].res + "#" + urls[1].res + "#" + urls[2].res + "#" + urls[3].res + "#" + urls[4].res
+            console.log(dataurl)
+            const newProduct = await {
+                id_brand,
+                id_size,
+                title,
+                description,
+                model,
+                price,
+                gender,
+                discount,
+                statuse,
+                dataurl
+            };
+            console.log(newProduct)
+            console.log("saliendo del newprodyct")
+            const connection = await getConnection();
+            const sql = ('INSERT INTO shoes SET ?')
+            const result = await connection.query(sql, [newProduct]);
+            if (!result) {
+                res.status(404).json({
+                    ok: false,
+                    msg: 'Ocurrio un error al crear el producto'
+                })
+            }
+            else {
+                res.status(200).json({
+                    ok: true,
+                    msg: 'Imagen subida con exito',
+                    data: urls
+                });
+            }
         } else {
-            res.status(200).json({
-                ok: true,
-                msg: 'Producto creado con exito'
+            res.status(405).json({
+                err: `${req.method} metodo no`
             })
         }
     } catch (error) {
         res.status(500).json({
             ok: false,
-            msg: 'Un error ha ocurrido al intentar conectar con el servidor'
+            msg: error.message,
+            msg: 'error en addproduct'
         })
     }
 }
@@ -44,7 +69,7 @@ const addProduct = async (req = request, res = response) => {
 const getProductsCard = async (req = request, res = response) => {
     try {
         const connection = await getConnection()
-        const result = await connection.query('SELECT id_shoes, title,price,id_brand FROM shoes')
+        const result = await connection.query('SELECT id_shoes, title,price,id_brand,dataurl, id_shoes FROM shoes')
         console.log(result)
         if (!result) {
             res.status(404).json({
@@ -52,6 +77,7 @@ const getProductsCard = async (req = request, res = response) => {
                 msg: 'Error al cargar las zapatillas'
             });
         }
+
         res.json(result)
     } catch (error) {
         return res.status(500).json({
@@ -62,17 +88,26 @@ const getProductsCard = async (req = request, res = response) => {
 }
 
 const getProduct = async (req = request, res = response) => {
-    const { id_shoes } = req.params
+    const {id_shoes} = req.params;
+    console.log(id_shoes)
     try {
         const connection = await getConnection()
-        const result = await connection.query('SELECT * FROM shoes WHERE id_shoes = ?', id_shoes)
+        const result = await connection.query('SELECT * FROM shoes WHERE id_shoes = ?', [id_shoes])
+        const id_brand = result[0].id_brand
+        const brand = await connection.query('SELECT name_brand FROM brands WHERE id_brand = ?', [id_brand])
+        result[0].id_brand = brand
+        var str = result[0].dataurl
+        const url = str.split('#')
+        result[0].dataurl = url
         if (!result) {
             res.status(404).json({
                 ok: false,
                 msg: "Ocurrio un error al intentar obtener estas zapatillas"
             })
         }
-        res.json(result)
+        res.json(result[0])
+        console.log('envio el json')
+        console.log(result[0])
     } catch (error) {
         res.status(500).json({
             ok: false,
@@ -91,6 +126,9 @@ const getProducts = async (req = request, res = response) => {
                 msg: "Ocurrio un error al intentar obtener estas zapatillas"
             })
         }
+        var str = result[0].dataurl
+        const url = str.split('#',1)
+        result[0].dataurl = url
         res.json(result)
     } catch (error) {
         res.status(500).json({

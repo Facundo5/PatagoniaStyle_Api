@@ -7,7 +7,7 @@ const userLogin = async (req = request, res = response) => {
     const { email, password } = req.body;
     try {
         const connection = await getConnection();
-        const result = await connection.query('SELECT id_user ,password, role, permissions FROM users WHERE email = ?', email);
+        const result = await connection.query('SELECT id_user ,password, role, permissions FROM users WHERE email = ?', [email]);
         if (!result) {
             res.status(404).json({
                 ok: false,
