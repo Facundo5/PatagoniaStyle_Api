@@ -58,22 +58,13 @@ const addUsers = async (req, res) => {
 
 const editUsers = async (req, res) => {
 
-    const id = req.params.id
-    console.log(id);
+    const { id_user } = req.params;
+
+    
     try {
-
-        const userUpdated = req.body
+        const {} = req.body
         const connection = await getConnection();
-        const idUser = await connection.query("SELECT id_user FROM users WHERE id_user = ?", id);
-        if (idUser.length < 1) {
-            return res.status(404).json({
-                ok: false,
-                message: 'El Usuario no existe'
-            });
-        }
-
-        const result = await connection.query("UPDATE users set ? WHERE id_user=?", [userUpdated, id]);
-
+        const result = await connection.query("UPDATE users set ? WHERE id_user=?", [id]);
         res.status(200).json({
             ok: true,
             result,
@@ -89,29 +80,20 @@ const editUsers = async (req, res) => {
 }
 
 const delUser = async (req, res) => {
-    const id = req.params.id
-    console.log(id)
+    const { id_user } = req.params;
     try {
-
         const connection = await getConnection();
-
-        const idUser = await connection.query("SELECT id_user FROM users WHERE id_user = ?", id);
-
-        if (idUser.length < 1) {
-            return res.status(404).json({
+        const result = await connection.query('DELETE FROM users WHERE id_user = ?', [id_user]);
+        if (!result) {
+            res.status(404).json({
                 ok: false,
-                message: 'El Usuario no existe'
-            });
+                msg: 'No se encontro al usuario o ya fue eliminado'
+            })
         }
-
-        const result = await connection.query("DELETE from users set ? WHERE id_user=?", id);
-
         res.status(200).josn({
             ok: true,
-            result,
             msg: 'Usuario Eliminado'
-
-        })
+        });
     } catch (error) {
         res.status(500).json({
             ok: false,

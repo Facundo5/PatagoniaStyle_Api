@@ -1,7 +1,11 @@
 const { getConnection } = require("../database/database")
 const cloudinary = require('../utils/cloudinary')
-const addProduct = async (req = request, res = response) => {
 
+
+
+
+
+const addProduct = async (req = request, res = response) => {
     const { title, price, model, id_brand, gender, id_size, discount, description, statuse } = req.body
     try {
         const uploader = async (path) => await cloudinary.uploads(path, 'Images');
@@ -66,6 +70,8 @@ const addProduct = async (req = request, res = response) => {
     }
 }
 
+
+
 const getProductsCard = async (req = request, res = response) => {
     try {
         const connection = await getConnection()
@@ -86,6 +92,10 @@ const getProductsCard = async (req = request, res = response) => {
         });
     }
 }
+
+
+
+
 
 const getProduct = async (req = request, res = response) => {
     const {id_shoes} = req.params;
@@ -116,6 +126,8 @@ const getProduct = async (req = request, res = response) => {
     }
 }
 
+
+
 const getProducts = async (req = request, res = response) => {
     try {
         const connection = await getConnection()
@@ -140,8 +152,8 @@ const getProducts = async (req = request, res = response) => {
 
 
 const updateProduct = async (req = request, res = response) => {
-    const { id_shoes } = req.params
-    const { title, price, image, model, id_brand, gender, id_size, discount, description, } = req.body
+    const { id_shoes } = req.params;
+    const { title, price, image, model, id_brand, gender, id_size, discount, description } = req.body
     try {
         const connection = await getConnection()
         const result = await connection.query('UPDATE shoes SET title = ?, price = ?, image = ?, model = ?, id_brand = ?, gender = ?, id_size = ?, discount = ?, description = ? WHERE id_shoes = ?'[title, price, image, model, id_brand, gender, id_size, discount, description, id_shoes])
@@ -163,15 +175,19 @@ const updateProduct = async (req = request, res = response) => {
         })
     }
 }
-const deleteProduct = async (req = request, res = response) => {
-    const { id_shoes } = req.params
+
+
+const delProduct = async (req = request, res = response) => {
+    const { id_shoes } = req.params;
+    console.log(id_shoes)
     try {
-        const connection = await getConnection()
-        const result = await connection.query('DELETE shoes WHERE id_shoes = ?', id_shoes)
+        const connection = await getConnection();
+        const result = await connection.query('DELETE FROM shoes WHERE id_shoes = ?',[id_shoes]);
+        console.log(result)
         if (!result) {
             res.status(404).json({
                 ok: false,
-                msg: 'Ocurrio un error al eliminar el producto'
+                msg: 'El producto no se encontro o ya fue eliminado.'
             })
         }
         else {
@@ -191,7 +207,7 @@ module.exports = {
     addProduct,
     getProduct,
     updateProduct,
-    deleteProduct,
+    delProduct,
     getProductsCard,
     getProducts
 }

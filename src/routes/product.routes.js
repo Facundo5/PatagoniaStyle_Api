@@ -1,4 +1,4 @@
-const { addProduct, getProduct,getProductsCard, updateProduct,deleteProduct, getProducts} = require('../controllers/product.controller');
+const { addProduct, getProduct,getProductsCard, updateProduct,delProduct, getProducts} = require('../controllers/product.controller');
 const {Router} = require('express');
 const { checkAuth } = require('../middlewares/auth');
 const { checkRoleAuth } = require('../middlewares/checkRoleAuth');
@@ -12,6 +12,7 @@ router.get('/getproduct/:id_shoes', getProduct)
 router.get('/getproductscards', getProductsCard)
 router.get('/admin/viewproducts',checkAuth, checkRoleAuth(['admin']), getProducts);
 router.put('/admin/updateproduct/:id',checkAuth, checkRoleAuth(['admin']) , updateProduct);
-router.post('/admin/addproduct', checkAuth, checkRoleAuth(['admin']) ,upload.array("image"),addProduct)
+router.post('/admin/addproduct', checkAuth, checkRoleAuth(['admin']) ,upload.array("image"),addProduct);
+router.delete('/admin/delproduct/:id_shoes',checkAuth, checkRoleAuth(['admin']) , delProduct);
 
 module.exports = router;
